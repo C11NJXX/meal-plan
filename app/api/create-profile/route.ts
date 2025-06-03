@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST() {
   try {
+    console.log("Creating Schema");
     const clerkUser = await currentUser();
     //若用户不存在
     if (!clerkUser) {

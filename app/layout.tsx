@@ -17,17 +17,18 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <ReactQueryClientProvider>
-        <html lang="en">
-          <body className="bg-gray-50 text-gray-900">
+      <html lang="en">
+        <body className="bg-gray-50 text-gray-900">
+          {" "}
+          <ReactQueryClientProvider>
             <Navbar />
             {/* Main container for page content */}
             <main className="max-w-7xl mx-auto pt-16 p-4 min-h-screen">
               {children}
-            </main>
-          </body>
-        </html>
-      </ReactQueryClientProvider>
+            </main>{" "}
+          </ReactQueryClientProvider>
+        </body>
+      </html>
     </ClerkProvider>
   );
 }
