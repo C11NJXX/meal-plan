@@ -1,6 +1,77 @@
+"use client";
 import { availablePlans } from "@/lib/plan";
+import { useUser } from "@clerk/nextjs";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import toast, { Toast } from "react-hot-toast";
+
+type SubscribeResponse = {
+  url: string;
+};
+
+type SubscribeError = {
+  error: string;
+};
+
+async function subscribeToPlan(
+  planType: string,
+  userId: string,
+  email: string
+): Promise<SubscribeResponse> {
+  const response = await fetch("/api/check-out", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      planType,
+      userId,
+      email,
+    }),
+  });
+  if (!response.ok) {
+    const errorData: SubscribeError = await response.json();
+    throw new Error(errorData.error || "Something went wrong.");
+  }
+
+  const data: SubscribeResponse = await response.json();
+  return data;
+}
 
 const SubscribePage = () => {
+  const { user } = useUser();
+  const router = useRouter();
+  const userId = user?.id;
+  const email = user?.emailAddresses[0].emailAddress || "";
+  const { mutate, isPending } = useMutation<
+    SubscribeResponse,
+    Error,
+    { planType: string }
+  >({
+    mutationFn: async ({ planType }) => {
+      if (!userId) {
+        throw new Error("User not signed in");
+      }
+      return subscribeToPlan(planType, userId, email);
+    },
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+    onError: () => {
+      toast.error("Something went wrong.");
+    },
+    onMutate: () => {
+      toast.loading("Processing your subsription...");
+    },
+  });
+
+  function handleSubscribe(planType: string) {
+    if (!userId) {
+      router.push("/sign-up");
+      return;
+    }
+    mutate({ planType });
+  }
   return (
     <div className="px-4 py-8 sm:py-12 lg:py-16">
       <div>
@@ -72,8 +143,10 @@ const SubscribePage = () => {
                   ? "bg-emerald-500 text-white  hover:bg-emerald-600 "
                   : "bg-emerald-100 text-emerald-700  hover:bg-emerald-200 "
               }  mt-8 block w-full py-3 px-6 border border-transparent rounded-md text-center font-medium disabled:bg-gray-400 disabled:cursor-not-allowed`}
+              onClick={() => handleSubscribe(plan.interval)}
+              disabled={isPending}
             >
-              Subscribe {plan.name}
+              {isPending ? "Please wait..." : `Subscribe ${plan.name}`}
             </button>
           </div>
         ))}
