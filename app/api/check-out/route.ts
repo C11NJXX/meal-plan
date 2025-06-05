@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid price id" }, { status: 400 });
     }
 
+    //session内的metadata用于后续在webhook里传递用户id和订阅信息进行数据库更新
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
