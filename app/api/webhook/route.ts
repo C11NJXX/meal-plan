@@ -1,3 +1,4 @@
+// stripe listen --forward-to localhost:3000/api/webhook
 import { stripe } from "@/lib/stripe";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
